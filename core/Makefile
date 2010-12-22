@@ -2692,6 +2692,16 @@ else
 $(INTERNAL_OTA_PACKAGE_TARGET): $(BRO)
 endif
 
+ifeq ($(WITH_GMS),true)
+    $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := false
+else
+ifneq ($(CM_BUILD),)
+    $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := true
+else
+    $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := false
+endif
+endif
+
 ifeq ($(TARGET_OTA_ASSERT_DEVICE),)
     OTA_SCRIPT_OVERRIDE_DEVICE := auto
 else
@@ -2707,6 +2717,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) \
 	   --extracted_input_target_files $(patsubst %.zip,%,$(BUILT_TARGET_FILES_PACKAGE)) \
 	   -p $(HOST_OUT) \
 	   -k $(KEY_CERT_PAIR) \
+	   --backup=$(backuptool) \
 	   $(if $(OEM_OTA_CONFIG), -o $(OEM_OTA_CONFIG)) \
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
 
