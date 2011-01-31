@@ -129,7 +129,7 @@ function check_product()
         return
     fi
 
-    if (echo -n $1 | grep -q -e "^cm_") ; then
+    if (echo -n $1 | grep -q -e "^xosp_") ; then
        XOSP_BUILD=$(echo -n $1 | sed -e 's/^xosp_//g')
     else
        XOSP_BUILD=
@@ -535,7 +535,11 @@ function print_lunch_menu()
     echo
     echo "You're building on" $uname
     echo
-    echo "Lunch menu... pick a combo:"
+    if [ "z${XOSP_DEVICES_ONLY}" != "z" ]; then
+       echo "Breakfast menu... pick a combo:"
+    else
+       echo "Lunch menu... pick a combo:"
+    fi
 
     local i=1
     local choice
@@ -544,6 +548,10 @@ function print_lunch_menu()
         echo "     $i. $choice"
         i=$(($i+1))
     done
+
+    if [ "z${XOSP_DEVICES_ONLY}" != "z" ]; then
+       echo "... and don't forget the xosp"
+    fi
 
     echo
 }
