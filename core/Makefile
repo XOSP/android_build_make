@@ -1948,8 +1948,18 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE)
 	   $(if $(OEM_OTA_CONFIG), -o $(OEM_OTA_CONFIG)) \
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
 
-.PHONY: otapackage
+.PHONY: otapackage xosp
 otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
+xosp: otapackage
+	$(hide) ln -f $(INTERNAL_OTA_PACKAGE_TARGET) $(XOSP_TARGET_PACKAGE)
+	$(hide) $(MD5SUM) $(XOSP_TARGET_PACKAGE) > $(XOSP_TARGET_PACKAGE).md5sum
+	@echo  ""
+	@echo  "================-XOSP was successfully compiled================"
+	@echo  "ROM Zip: $(XOSP_TARGET_PACKAGE)"
+	@echo  "MD5: `cat $(XOSP_TARGET_PACKAGE).md5sum | cut -d ' ' -f 1`"
+	@echo  "Size: `ls -lah $(XOSP_TARGET_PACKAGE) | cut -d ' ' -f 5`"
+	@echo  "==============================================================="
+	@echo  ""
 
 endif    # build_ota_package
 
