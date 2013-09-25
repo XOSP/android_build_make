@@ -131,6 +131,7 @@ function check_product()
 
     if (echo -n $1 | grep -q -e "^xosp_") ; then
        XOSP_BUILD=$(echo -n $1 | sed -e 's/^xosp_//g')
+       export BUILD_NUMBER=$((date +%s%N ; echo $XOSP_BUILD; hostname) | openssl sha1 | sed -e 's/.*=//g; s/ //g' | cut -c1-10)
     else
        XOSP_BUILD=
     fi
