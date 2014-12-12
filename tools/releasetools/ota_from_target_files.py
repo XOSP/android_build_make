@@ -380,6 +380,14 @@ def AddCompatibilityArchive(target_zip, output_zip, system_included=True,
                     arcname="compatibility.zip",
                     compress_type=zipfile.ZIP_STORED)
 
+def CopyInstallTools(output_zip):
+  oldcwd = os.getcwd()
+  os.chdir(os.getenv('OUT'))
+  for root, subdirs, files in os.walk("install"):
+    for f in files:
+      p = os.path.join(root, f)
+      output_zip.write(p, p)
+  os.chdir(oldcwd)
 
 def WriteFullOTAPackage(input_zip, output_zip):
   # TODO: how to determine this?  We don't know what version it will
@@ -476,12 +484,12 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   script.AppendExtra("ifelse(is_mounted(\"/system\"), unmount(\"/system\"));")
   device_specific.FullOTA_InstallBegin()
 
+  CopyInstallTools(output_zip)
+  script.UnpackPackageDir("install", "/tmp/install")
+  script.SetPermissionsRecursive("/tmp/install", 0, 0, 0755, 0644, None, None)
+  script.SetPermissionsRecursive("/tmp/install/bin", 0, 0, 0755, 0755, None, None)
+
   if OPTIONS.backuptool:
-    if block_based:
-      common.ZipWriteStr(output_zip, "system/bin/backuptool.sh",
-                     ""+input_zip.read("SYSTEM/bin/backuptool.sh"))
-      common.ZipWriteStr(output_zip, "system/bin/backuptool.functions",
-                     ""+input_zip.read("SYSTEM/bin/backuptool.functions"))
     script.Mount("/system")
     script.RunBackup("backup")
     script.Unmount("/system")
