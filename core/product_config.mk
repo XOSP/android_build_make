@@ -181,7 +181,7 @@ include $(BUILD_SYSTEM)/device.mk
 
 # A XOSP build needs only the XOSP product makefiles.
 ifneq ($(XOSP_BUILD),)
-  all_product_configs := $(shell ls device/*/$(XOSP_BUILD)/xosp.mk)
+  all_product_configs := $(shell find device -path "*/$(XOSP_BUILD)/xosp.mk")
 else
   ifneq ($(strip $(TARGET_BUILD_APPS)),)
   # An unbundled app build needs only the core product makefiles.
