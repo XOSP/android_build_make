@@ -127,6 +127,28 @@ function get_build_var()
       command make --no-print-directory -f build/core/config.mk dumpvar-$1)
 }
 
+# Cherry pick some stuff if it is necessary
+
+function cherry_pick()
+{
+    TARGET_CHERRY="cherry_$TARGET_PRODUCT.sh"	
+    if [ -f $TARGET_CHERRY ]; then
+    chmod +x $TARGET_CHERRY
+    tput setaf 4
+    echo -e "Cherry pick script found for this target product!"
+    echo -e "Do you want to use the script to cherry pick?"
+    tput setaf 2
+    echo -e "Insert Binary values for Yes or no (1 or 0)"
+    read choice
+    if (test $choice == "1"); then
+    ./$TARGET_CHERRY
+    else 
+    echo -e "Continue with the ROM compilation..."
+    fi
+    fi
+    tput sgr0 
+}
+
 # check to see if the supplied product is one we can build
 function check_product()
 {
@@ -649,6 +671,7 @@ function lunch()
     set_stuff_for_environment
     printconfig
     destroy_build_var_cache
+    cherry_pick
 }
 
 # Tab completion for lunch.
