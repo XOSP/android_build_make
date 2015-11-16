@@ -37,6 +37,31 @@ endif
 #TOPDIR := $(TOP)/
 #endif
 
+ifeq ($(XOSP_BUILDTYPE)$(I_AM_XOSP),OFFICIAL)
+$(warning ******************************************************************************************)
+$(warning ******************************************************************************************)
+$(warning)
+$(warning ************************************WELCOME***********************************************)
+$(warning)
+$(warning ******************************************************************************************)
+$(warning ******************************************************************************************)
+
+else
+$(hide rm -rf $(OUT_DIR)/* )
+$(warning ******************************************************************************************)
+$(warning ******************************************************************************************)
+$(warning)
+$(warning *  Hey sorry, but there's nothing to see here!)
+$(warning *  You're building for an official device, but only XOSP team can do that!)
+$(warning *  This decision was taken in order to prevent spreading official builds from other people)
+$(warning *  so, just close the terminal window and wait untill a new build will be done by us) 
+$(warning)
+$(warning ******************************************************************************************)
+$(warning ******************************************************************************************)
+$(warning)
+$(error **)
+endif
+
 # Check for broken versions of make.
 # (Allow any version under Cygwin since we don't actually build the platform there.)
 ifeq (,$(findstring CYGWIN,$(shell uname -sm)))
