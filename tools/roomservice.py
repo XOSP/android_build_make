@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# Copyright (C) 2012-2013, The CyanogenMod Project
+# Copyright (C) 2012-2013 The CyanogenMod Project
+# Copyright (C) 2015 The XOSP Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,7 +52,7 @@ except:
     device = product
 
 if not depsonly:
-    print("Device %s not found. Attempting to retrieve device repository from CyanogenMod Github (http://github.com/CyanogenMod)." % device)
+    print("Device %s not found. Attempting to retrieve device repository from the XOSP-Project Github (http://github.com/XOSP-Project)." % device)
 
 repositories = []
 
@@ -70,7 +71,7 @@ def add_auth(githubreq):
         githubreq.add_header("Authorization","Basic %s" % githubauth)
 
 if not depsonly:
-    githubreq = urllib.request.Request("https://api.github.com/search/repositories?q=%s+user:CyanogenMod+in:name+fork:true" % device)
+    githubreq = urllib.request.Request("https://api.github.com/search/repositories?q=%s+user:XOSP-Project+in:name+fork:true" % device)
     add_auth(githubreq)
     try:
         result = json.loads(urllib.request.urlopen(githubreq).read().decode())
@@ -173,12 +174,12 @@ def add_to_manifest(repositories, fallback_branch = None):
         repo_name = repository['repository']
         repo_target = repository['target_path']
         if exists_in_tree(lm, repo_name):
-            print('CyanogenMod/%s already exists' % (repo_name))
+            print('XOSP-Project/%s already exists' % (repo_name))
             continue
 
-        print('Adding dependency: CyanogenMod/%s -> %s' % (repo_name, repo_target))
+        print('Adding dependency: XOSP-Project/%s -> %s' % (repo_name, repo_target))
         project = ElementTree.Element("project", attrib = { "path": repo_target,
-            "remote": "github", "name": "CyanogenMod/%s" % repo_name })
+            "remote": "github", "name": "XOSP-Project/%s" % repo_name })
 
         if 'branch' in repository:
             project.set('revision',repository['branch'])
@@ -200,7 +201,7 @@ def add_to_manifest(repositories, fallback_branch = None):
 
 def fetch_dependencies(repo_path, fallback_branch = None):
     print('Looking for dependencies')
-    dependencies_path = repo_path + '/cm.dependencies'
+    dependencies_path = repo_path + '/reborn.dependencies'
     syncable_repos = []
 
     if os.path.exists(dependencies_path):
@@ -209,7 +210,7 @@ def fetch_dependencies(repo_path, fallback_branch = None):
         fetch_list = []
 
         for dependency in dependencies:
-            if not is_in_manifest("CyanogenMod/%s" % dependency['repository']):
+            if not is_in_manifest("XOSP-Project/%s" % dependency['repository']):
                 fetch_list.append(dependency)
                 syncable_repos.append(dependency['target_path'])
 
@@ -292,4 +293,4 @@ else:
             print("Done")
             sys.exit()
 
-print("Repository for %s not found in the CyanogenMod Github repository list. If this is in error, you may need to manually add it to your local_manifests/roomservice.xml." % device)
+print("Repository for %s not found in the XOSP-Project Github repository list. If this is in error, you may need to manually add it to your local_manifests/roomservice.xml." % device)
