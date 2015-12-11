@@ -61,11 +61,12 @@ endif
 
 endif # CALLED_FROM_SETUP
 
+TARGET_DISPLAY:= $(shell echo $(TARGET_PRODUCT) | sed -e 's|^reborn_||g')
 
 ifneq ($(PRINT_BUILD_CONFIG),)
 HOST_OS_EXTRA:=$(shell python -c "import platform; print(platform.platform())")
 $(info ======== Xperia Open Source Project Presents ==========)
-$(info ========== S+ Reborn for $TARGET_PRODUCT ==============)
+$(info ========== S+ Reborn for $(TARGET_DISPLAY) ==============)
 $(info   PLATFORM_VERSION_CODENAME=$(PLATFORM_VERSION_CODENAME))
 $(info   PLATFORM_VERSION=$(PLATFORM_VERSION))
 $(info   REBORN_VERSION=$(REBORN_VERSION))
