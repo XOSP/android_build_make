@@ -76,9 +76,7 @@ PRODUCT_PACKAGES += \
     uncrypt \
     voip-common \
     webview \
-    wifi-service \
-    libwebviewchromium_plat_support \
-    libwebviewchromium_loader
+    wifi-service
 
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.software.webview.xml:system/etc/permissions/android.software.webview.xml
