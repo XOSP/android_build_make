@@ -643,6 +643,15 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   script.Unmount("/data")
   script.AppendExtra("endif;")
 
+script.print("")  
+script.print("____  ___________    ___________________")  
+script.print("\   \/  /\_____  \  /   _____/\______   \ ") 
+script.print(" \     /  /   |   \ \_____  \  |     ___/") 
+script.print(" /     \ /    |    \/        \ |    |   ")  
+script.print("/___/\  \\_______  /_______  / |____|   ")  
+script.print("      \_/        \/        \/           ")
+script.print("")
+
   if "selinux_fc" in OPTIONS.info_dict:
     WritePolicyConfig(OPTIONS.info_dict["selinux_fc"], output_zip)
 
