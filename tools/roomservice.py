@@ -39,7 +39,7 @@ except ImportError:
 
 from xml.etree import ElementTree
 
-product = sys.argv[1];
+product = sys.argv[1]
 
 if len(sys.argv) > 2:
     depsonly = sys.argv[2]
@@ -60,7 +60,8 @@ try:
     authtuple = netrc.netrc().authenticators("api.github.com")
 
     if authtuple:
-        githubauth = base64.encodestring('%s:%s' % (authtuple[0], authtuple[2])).replace('\n', '')
+        auth_string = ('%s:%s' % (authtuple[0], authtuple[2])).encode()
+        githubauth = base64.encodestring(auth_string).decode().replace('\n', '')
     else:
         githubauth = None
 except:
