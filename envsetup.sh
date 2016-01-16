@@ -107,57 +107,32 @@ function build_xospapps()
     
     ARCHTARGET=$(get_build_var TARGET_ARCH)
     DEVICETARGET=$(get_build_var TARGET_DEVICE)
+    PRODUCT_OUT=$(get_build_var PRODUCT_OUT)
     DATE=` date +%d-%m-%Y`
-
-    cd out
-    mkdir target
-    cd target
-    mkdir product
-    cd product
-    mkdir $DEVICETARGET
-    cd ..
-    cd ..
-    cd ..
+    mkdir -p $PRODUCT_OUT/install
+    mkdir -p $PRODUCT_OUT/install/xosp_apps
+    XOSPATH=$PRODUCT_OUT/install/xosp_apps
     
-    tput setaf 2
-    echo -e "Target Arch set to: $ARCHTARGET"
-    echo -e "Target Device is set now for $DEVICETARGET"
-    tput setaf 7
-    sleep 3
     
     if [[ $ARCHTARGET == x86 ]]; then
-
-    tput setaf 6
-    echo -e "Copying up some prerequisite stuff"
+    
     cp -avr x86/META-INF out >&/dev/null
-    sleep 3
 
 
     elif [[ $ARCHTARGET == arm ]]; then
 
-    tput setaf 6
-    echo -e "Copying up some prerequisite stuff"
-    cp -avr arm/META-INF out
-    sleep 3
+    cp -avr arm/META-INF out >&/dev/null
 
     fi
     
-    tput setaf 2
-    echo -e "Making XOSPAPPS Zip.."
     cp -avr Sources/system out >&/dev/null
     cd out
-    zip -r "XOSPApps $DATE".zip META-INF system >&/dev/null
-    
-    echo -e "Cleaning up temp files"
-    mv "XOSPApps $DATE.zip" target/product/$DEVICETARGET
+    zip -r "XOSPApps".zip META-INF system >&/dev/null
+    mv "XOSPApps.zip" $XOSPATH
     rm -rf META-INF
     rm -rf system
-    tput setaf 6 
-    echo -e "XOSPApps Zip was successfully done"
-    echo -e "xosp_apps/out/target/product/$DEVICETARGET/XOSPApps $DATE.zip"
-    echo -e ""
-    tput setaf 7
     cd ..
+    rm -rf out
     cd ..
 }
     
