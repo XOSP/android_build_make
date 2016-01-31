@@ -274,7 +274,7 @@ class EdifyGenerator(object):
     self.script.append(self.WordWrap(cmd))
     
   def FlashXOSPApps(self):
-    self.script.append('package_extract_file("install/XOSPApps.zip", "/tmp/xosp_apps");')
+    self.script.append('package_extract_file("install/xosp_apps/XOSPApps.zip", "/tmp/xosp_apps");')
     self.script.append('run_program("/sbin/busybox", "unzip", "/tmp/xosp_apps/XOSPApps.zip", "META-INF/com/google/android/*", "-d", "/tmp/xosp_apps");')
     self.script.append('run_program("/sbin/busybox", "sh", "/tmp/xosp_apps/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/xosp_apps/XOSPApps.zip");')
 
