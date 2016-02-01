@@ -109,9 +109,7 @@ function build_xospapps()
     DEVICETARGET=$(get_build_var TARGET_DEVICE)
     PRODUCT_OUT=$(get_build_var PRODUCT_OUT)
     DATE=` date +%d-%m-%Y`
-    mkdir -p $PRODUCT_OUT/install
-    mkdir -p $PRODUCT_OUT/install/xosp_apps
-    XOSPATH=$PRODUCT_OUT/install/xosp_apps
+    XOSPATH=$PRODUCT_OUT
     
     
     if [[ $ARCHTARGET == x86 ]]; then
@@ -127,8 +125,8 @@ function build_xospapps()
     
     cp -avr Sources/system out >&/dev/null
     cd out
-    zip -r "XOSPApps".zip META-INF system >&/dev/null
-    mv "XOSPApps.zip" $XOSPATH
+    zip -r "XOSPApps $DATE".zip META-INF system >&/dev/null
+    mv "XOSPApps $DATE.zip" $XOSPATH
     rm -rf META-INF
     rm -rf system
     cd ..

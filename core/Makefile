@@ -1910,6 +1910,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
 
 REBORN_TARGET_PACKAGE := $(PRODUCT_OUT)/$(REBORN_VERSION).zip
+XOSPAPPS_TARGET_PACKAGE := $(PRODUCT_OUT)/XOSPApps $(shell date -u +%Y%m%d).zip
 
 .PHONY: otapackage reborn
 otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
@@ -1917,7 +1918,8 @@ reborn: otapackage
 	$(hide) ln -f $(INTERNAL_OTA_PACKAGE_TARGET) $(REBORN_TARGET_PACKAGE)
 	$(hide) $(MD5SUM) $(REBORN_TARGET_PACKAGE) > $(REBORN_TARGET_PACKAGE).md5sum
 	@echo -e ${CL_GRN}"================-S+ Reborn was successfully compiled================"${CL_RST}
-	@echo -e ${CL_GRN}"Zip: "${CL_CYN}" $(REBORN_TARGET_PACKAGE)" ${CL_RST}
+	@echo -e ${CL_GRN}"ROM Zip: "${CL_CYN}" $(REBORN_TARGET_PACKAGE)" ${CL_RST}
+	@echo -e ${CL_GRN}"XOSPApps Zip: "${CL_CYN}"$(XOSPAPPS_TARGET_PACKAGE)" ${CL_RST}
 	@echo -e ${CL_GRN}"MD5: "${CL_CYN}" `cat $(REBORN_TARGET_PACKAGE).md5sum | cut -d ' ' -f 1`"${CL_RST}
 	@echo -e ${CL_GRN}"Size:"${CL_CYN}" `ls -lah $(REBORN_TARGET_PACKAGE) | cut -d ' ' -f 5`"${CL_RST}
 	@echo -e ${CL_GRN}"============================================================================"${CL_RST}
