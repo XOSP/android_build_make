@@ -95,44 +95,6 @@ function cherry_pick()
     fi
     tput sgr0 
 }
-
-function build_xospapps()
-{
-    
-    cd xosp_apps
-    mkdir out
-    cd out
-    mkdir system 
-    cd ..
-    
-    ARCHTARGET=$(get_build_var TARGET_ARCH)
-    DEVICETARGET=$(get_build_var TARGET_DEVICE)
-    PRODUCT_OUT=$(get_build_var PRODUCT_OUT)
-    DATE=` date +%d-%m-%Y`
-    XOSPATH=$PRODUCT_OUT
-    
-    
-    if [[ $ARCHTARGET == x86 ]]; then
-    
-    cp -avr x86/META-INF out >&/dev/null
-
-
-    elif [[ $ARCHTARGET == arm ]]; then
-
-    cp -avr arm/META-INF out >&/dev/null
-
-    fi
-    
-    cp -avr Sources/system out >&/dev/null
-    cd out
-    zip -r "XOSPApps $DATE".zip META-INF system >&/dev/null
-    mv "XOSPApps $DATE.zip" $XOSPATH
-    rm -rf META-INF
-    rm -rf system
-    cd ..
-    rm -rf out
-    cd ..
-}
     
 # check to see if the supplied product is one we can build
 function check_product()
