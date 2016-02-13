@@ -179,9 +179,9 @@ include $(BUILD_SYSTEM)/node_fns.mk
 include $(BUILD_SYSTEM)/product.mk
 include $(BUILD_SYSTEM)/device.mk
 
-# A REBORN build needs only the REBORN product makefiles.
-ifneq ($(REBORN_BUILD),)
-  all_product_configs := $(shell find device -path "*/$(REBORN_BUILD)/reborn.mk")
+# A XOSP build needs only the XOSP product makefiles.
+ifneq ($(XOSP_BUILD),)
+  all_product_configs := $(shell find device -path "*/$(XOSP_BUILD)/xosp.mk")
 else
   ifneq ($(strip $(TARGET_BUILD_APPS)),)
   # An unbundled app build needs only the core product makefiles.
@@ -192,9 +192,9 @@ else
     # files in the tree.
     all_product_configs := $(get-all-product-makefiles)
   endif # TARGET_BUILD_APPS
-endif # REBORN_BUILD
+endif # XOSP_BUILD
 
-ifeq ($(REBORN_BUILD),)
+ifeq ($(XOSP_BUILD),)
 # Find the product config makefile for the current product.
 # all_product_configs consists items like:
 # <product_name>:<path_to_the_product_makefile>

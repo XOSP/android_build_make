@@ -61,17 +61,17 @@ endif
 
 endif # CALLED_FROM_SETUP
 
-TARGET_DISPLAY:= $(shell echo $(TARGET_PRODUCT) | sed -e 's|^reborn_||g')
+TARGET_DISPLAY:= $(shell echo $(TARGET_PRODUCT) | sed -e 's|^xosp_||g')
 
 ifneq ($(PRINT_BUILD_CONFIG),)
 HOST_OS_EXTRA:=$(shell python -c "import platform; print(platform.platform())")
-$(info ======== Xperia Open Source Project Presents ==========)
-$(info ========== S+ Reborn for $(TARGET_DISPLAY) ==============)
+$(info ============== Team XOSP presents ==============)
+$(info ========== XOSP for $(TARGET_DISPLAY) ==============)
 $(info   PLATFORM_VERSION_CODENAME=$(PLATFORM_VERSION_CODENAME))
 $(info   PLATFORM_VERSION=$(PLATFORM_VERSION))
-$(info   REBORN_VERSION=$(REBORN_VERSION))
-$(info   PRODUCT_RELEASE =$(PRODUCT_RELEASE))
-$(info	 PRODUCT_REVISION =$(PRODUCT_REVISION))
+$(info   XOSP_MODVERSION=$(XOSP_VERSION))
+$(info   XOSP_RELEASE =$(PRODUCT_RELEASE))
+$(info	 XOSP_REVISION =$(PRODUCT_REVISION))
 $(info   TARGET_PRODUCT=$(TARGET_PRODUCT))
 $(info   TARGET_BUILD_VARIANT=$(TARGET_BUILD_VARIANT))
 $(info   TARGET_BUILD_TYPE=$(TARGET_BUILD_TYPE))

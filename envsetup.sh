@@ -105,13 +105,13 @@ function check_product()
         return
     fi
 
-    if (echo -n $1 | grep -q -e "^reborn_") ; then
-       REBORN_BUILD=$(echo -n $1 | sed -e 's/^reborn_//g')
-       export BUILD_NUMBER=$((date +%s%N ; echo $REBORN_BUILD; hostname) | openssl sha1 | sed -e 's/.*=//g; s/ //g' | cut -c1-10)
+    if (echo -n $1 | grep -q -e "^xosp_") ; then
+       XOSP_BUILD=$(echo -n $1 | sed -e 's/^xosp_//g')
+       export BUILD_NUMBER=$((date +%s%N ; echo $XOSP_BUILD; hostname) | openssl sha1 | sed -e 's/.*=//g; s/ //g' | cut -c1-10)
     else
-       REBORN_BUILD=
+       XOSP_BUILD=
     fi
-    export REBORN_BUILD
+    export XOSP_BUILD
 
         TARGET_PRODUCT=$1 \
         TARGET_BUILD_VARIANT= \
@@ -533,7 +533,7 @@ function print_lunch_menu()
        echo "  (ohai, koush!)"
     fi
     echo
-    if [ "z${REBORN_DEVICES_ONLY}" != "z" ]; then
+    if [ "z${XOSP_DEVICES_ONLY}" != "z" ]; then
        echo "Breakfast menu... pick a combo:"
     else
        echo "Lunch menu... pick a combo:"
@@ -547,8 +547,8 @@ function print_lunch_menu()
         i=$(($i+1))
     done | column
 
-    if [ "z${REBORN_DEVICES_ONLY}" != "z" ]; then
-       echo "... and don't forget the reborn!"
+    if [ "z${XOSP_DEVICES_ONLY}" != "z" ]; then
+       echo "... and don't forget the xosp!"
     fi
 
     echo
@@ -558,7 +558,7 @@ function brunch()
 {
     breakfast $*
     if [ $? -eq 0 ]; then
-        mka reborn
+        mka xosp
     else
         echo "No such item in brunch menu. Try 'breakfast'"
         return 1
@@ -570,10 +570,10 @@ function breakfast()
 {
     target=$1
     local variant=$2
-    REBORN_DEVICES_ONLY="true"
+    XOSP_DEVICES_ONLY="true"
     unset LUNCH_MENU_CHOICES
     add_lunch_combo full-eng
-    for f in `/bin/ls vendor/reborn/vendorsetup.sh 2> /dev/null`
+    for f in `/bin/ls vendor/xosp/vendorsetup.sh 2> /dev/null`
         do
             echo "including $f"
             . $f
@@ -593,7 +593,7 @@ function breakfast()
             if [ -z "$variant" ]; then
                 variant="userdebug"
             fi
-            lunch reborn_$target-$variant
+            lunch xosp_$target-$variant
         fi
     fi
     return $?
@@ -759,8 +759,8 @@ function tapas()
 function eat()
 {
     if [ "$OUT" ] ; then
-        MODVERSION=$(get_build_var REBORN_VERSION)
-        ZIPFILE=reborn-$MODVERSION.zip
+        MODVERSION=$(get_build_var XOSP_VERSION)
+        ZIPFILE=xosp-$MODVERSION.zip
         ZIPPATH=$OUT/$ZIPFILE
         if [ ! -f $ZIPPATH ] ; then
             echo "Nothing to eat"
@@ -775,7 +775,7 @@ function eat()
             done
             echo "Device Found.."
         fi
-    if (adb shell getprop ro.reborn.device | grep -q "$REBORN_BUILD");
+    if (adb shell getprop ro.xosp.device | grep -q "$XOSP_BUILD");
     then
         # if adbd isn't root we can't write to /cache/recovery/
         adb root
@@ -797,7 +797,7 @@ EOF
     fi
     return $?
     else
-        echo "The connected device does not appear to be $REBORN_BUILD, run away!"
+        echo "The connected device does not appear to be $XOSP_BUILD, run away!"
     fi
 }
 
@@ -1778,7 +1778,7 @@ function installboot()
     sleep 1
     adb wait-for-online shell mount /system 2>&1 > /dev/null
     adb wait-for-online remount
-    if (adb shell getprop ro.reborn.device | grep -q "$REBORN_BUILD");
+    if (adb shell getprop ro.xosp.device | grep -q "$XOSP_BUILD");
     then
         adb push $OUT/boot.img /cache/
         for i in $OUT/system/lib/modules/*;
@@ -1789,7 +1789,7 @@ function installboot()
         adb shell chmod 644 /system/lib/modules/*
         echo "Installation complete."
     else
-        echo "The connected device does not appear to be $REBORN_BUILD, run away!"
+        echo "The connected device does not appear to be $XOSP_BUILD, run away!"
     fi
 }
 
@@ -1823,13 +1823,13 @@ function installrecovery()
     sleep 1
     adb wait-for-online shell mount /system 2>&1 >> /dev/null
     adb wait-for-online remount
-    if (adb shell getprop ro.reborn.device | grep -q "$REBORN_BUILD");
+    if (adb shell getprop ro.xosp.device | grep -q "$XOSP_BUILD");
     then
         adb push $OUT/recovery.img /cache/
         adb shell dd if=/cache/recovery.img of=$PARTITION
         echo "Installation complete."
     else
-        echo "The connected device does not appear to be $REBORN_BUILD, run away!"
+        echo "The connected device does not appear to be $XOSP_BUILD, run away!"
     fi
 }
 
@@ -2150,7 +2150,7 @@ function cmka() {
     if [ ! -z "$1" ]; then
         for i in "$@"; do
             case $i in
-                reborn|otapackage|systemimage)
+                xosp|otapackage|systemimage)
                     mka installclean
                     mka $i
                     ;;
@@ -2246,7 +2246,7 @@ function dopush()
         echo "Device Found."
     fi
 
-    if (adb shell getprop ro.reborn.device | grep -q "$REBORN_BUILD") || [ "$FORCE_PUSH" == "true" ];
+    if (adb shell getprop ro.xosp.device | grep -q "$XOSP_BUILD") || [ "$FORCE_PUSH" == "true" ];
     then
     # retrieve IP and PORT info if we're using a TCP connection
     TCPIPPORT=$(adb devices | egrep '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+[^0-9]+' \
@@ -2357,7 +2357,7 @@ EOF
     rm -f $OUT/.log
     return 0
     else
-        echo "The connected device does not appear to be $REBORN_BUILD, run away!"
+        echo "The connected device does not appear to be $XOSP_BUILD, run away!"
     fi
 }
 
@@ -2504,7 +2504,7 @@ unset f
 
 # Add completions
 check_bash_version && {
-    dirs="sdk/bash_completion vendor/reborn/bash_completion"
+    dirs="sdk/bash_completion vendor/xosp/bash_completion"
     for dir in $dirs; do
     if [ -d ${dir} ]; then
         for f in `/bin/ls ${dir}/[a-z]*.bash 2> /dev/null`; do
