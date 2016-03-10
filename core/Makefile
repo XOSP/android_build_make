@@ -1909,7 +1909,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
 
 XOSP_TARGET_PACKAGE := $(PRODUCT_OUT)/$(XOSP_VERSION).zip
-XOSPAPPS_TARGET_PACKAGE := $(PRODUCT_OUT)/XOSPApps-$(shell date -u +%d%m%Y)-$(TARGET_DEVICE).zip
+#XOSPAPPS_TARGET_PACKAGE := $(PRODUCT_OUT)/XOSPApps-$(shell date -u +%d%m%Y)-$(TARGET_DEVICE).zip
 
 .PHONY: otapackage xosp
 otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
@@ -1918,7 +1918,7 @@ xosp: otapackage
 	$(hide) $(MD5SUM) $(XOSP_TARGET_PACKAGE) > $(XOSP_TARGET_PACKAGE).md5sum
 	@echo -e ${CL_GRN}"================-XOSP was successfully compiled================"${CL_RST}
 	@echo -e ${CL_GRN}"ROM Zip: "${CL_CYN}" $(XOSP_TARGET_PACKAGE)" ${CL_RST}
-	@echo -e ${CL_GRN}"XOSPApps Zip: "${CL_CYN}"$(XOSPAPPS_TARGET_PACKAGE)" ${CL_RST}
+	#@echo -e ${CL_GRN}"XOSPApps Zip: "${CL_CYN}"$(XOSPAPPS_TARGET_PACKAGE)" ${CL_RST}
 	@echo -e ${CL_GRN}"MD5: "${CL_CYN}" `cat $(XOSP_TARGET_PACKAGE).md5sum | cut -d ' ' -f 1`"${CL_RST}
 	@echo -e ${CL_GRN}"Size:"${CL_CYN}" `ls -lah $(XOSP_TARGET_PACKAGE) | cut -d ' ' -f 5`"${CL_RST}
 	@echo -e ${CL_GRN}"==============================================================="${CL_RST}
