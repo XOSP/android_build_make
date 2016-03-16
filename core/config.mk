@@ -658,6 +658,9 @@ endif
 # Rules for QCOM targets
 include vendor/xosp/build/core/qcom_target.mk
 
+# Rules for MTK targets
+include vendor/xosp/build/core/mtk_target.mk
+
 # ###############################################################
 # Set up final options.
 # ###############################################################
