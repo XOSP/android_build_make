@@ -278,11 +278,6 @@ class EdifyGenerator(object):
     cmd = "delete(" + ",\0".join(['"%s"' % (i,) for i in file_list]) + ");"
     self.script.append(self.WordWrap(cmd))
 
-  def FlashXOSPApps(self):
-    self.script.append('package_extract_file("install/xospapps/XOSPApps.zip", "/tmp/install/xospapps");')
-    self.script.append('run_program("/sbin/busybox", "unzip", "/tmp/install/xospapps/XOSPApps.zip", "META-INF/com/google/android/*", "-d", "/tmp/install/xospapps");')
-    self.script.append('run_program("/sbin/busybox", "sh", "/tmp/install/xospapps/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/install/xospapps/XOSPApps.zip");')
-
   def DeleteFilesIfNotMatching(self, file_list):
     """Delete the file in file_list if not matching the checksum."""
     if not file_list:

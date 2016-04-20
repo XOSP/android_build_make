@@ -738,15 +738,6 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   if block_based:
     script.Unmount("/system")
 
-  if block_based:
-    script.Print("Flashing XOSPApps...")
-    common.ZipWriteStr(output_zip, "install/xospapps/XOSPApps.zip",
-                   ""+input_zip.read("INSTALL/xospapps/XOSPApps.zip"))
-    script.Mount("/system")
-    script.FlashXOSPApps()
-  if block_based:
-    script.Unmount("/system")
-
   script.ShowProgress(0.05, 5)
   script.WriteRawImage("/boot", "boot.img")
 

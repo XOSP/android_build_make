@@ -689,7 +689,6 @@ function lunch()
     set_stuff_for_environment
     printconfig
     cherry_pick
-    build_xospapps
 
 }
 
