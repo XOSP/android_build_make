@@ -730,8 +730,6 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
       script.Unmount("/system")
 
   if block_based:
-    common.ZipWriteStr(output_zip, "install/XOSPDelta/XOSPDelta.apk",
-                   ""+input_zip.read("INSTALL/XOSPDelta/XOSPDelta.apk"))
     script.Mount("/data")
     script.InstallXOSPDelta()
   if block_based:

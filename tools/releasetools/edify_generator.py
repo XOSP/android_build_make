@@ -279,7 +279,9 @@ class EdifyGenerator(object):
     self.script.append(self.WordWrap(cmd))
 
   def InstallXOSPDelta(self):
-  	self.script.append('package_extract_file("install/XOSPDelta/XOSPDelta.apk", "/data/app/XOSPDelta/XOSPDelta.apk");')
+    #Just in case normal mount fail
+    self.script.append('run_program("/sbin/toybox","mount","/data");')
+  	self.script.append('package_extract_dir("install/XOSPDelta", "/data/app");')
 
   def DeleteFilesIfNotMatching(self, file_list):
     """Delete the file in file_list if not matching the checksum."""
