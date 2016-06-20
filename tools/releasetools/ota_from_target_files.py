@@ -766,8 +766,6 @@ script.Print("")
 
   if block_based:
     script.Print("Preparing XOSPDelta...")
-    common.ZipWriteStr(output_zip, "install/xospdelta/XOSPDelta.zip",
-                   ""+input_zip.read("INSTALL/xospdelta/XOSPDelta.zip"))
     script.Mount("/system")
     script.InstallXOSPDelta()
   if block_based:
