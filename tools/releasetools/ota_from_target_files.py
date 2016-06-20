@@ -740,8 +740,6 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
 
   if block_based:
     script.Print("Preparing XOSPDelta...")
-    common.ZipWriteStr(output_zip, "install/xospdelta/XOSPDelta.zip",
-                   ""+input_zip.read("INSTALL/xospdelta/XOSPDelta.zip"))
     script.Mount("/system")
     script.InstallXOSPDelta()
   if block_based:
