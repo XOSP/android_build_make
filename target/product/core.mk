@@ -23,7 +23,7 @@
 PRODUCT_PACKAGES += \
     BlockedNumberProvider \
     BookmarkProvider \
-    Browser2 \
+    Browser \
     CalendarProvider \
     CaptivePortalLogin \
     CertInstaller \
