@@ -678,14 +678,14 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
     script.Unmount("/data")
     script.AppendExtra("endif;")
 
-script.Print("")  
-script.Print("____  ___________    ___________________")  
-script.Print("\   \/  /\_____  \  /   _____/\______   \ ") 
-script.Print(" \     /  /   |   \ \_____  \  |     ___/") 
-script.Print(" /     \ /    |    \/        \ |    |   ")  
-script.Print("/___/\  \\_______  /_______  / |____|   ")  
-script.Print("      \_/        \/        \/           ")
-script.Print("")
+  script.Print("")  
+  script.Print("____  ___________    ___________________")  
+  script.Print("\   \/  /\_____  \  /   _____/\______   \ ") 
+  script.Print(" \     /  /   |   \ \_____  \  |     ___/") 
+  script.Print(" /     \ /    |    \/        \ |    |   ")  
+  script.Print("/___/\  \\_______  /_______  / |____|   ")  
+  script.Print("      \_/        \/        \/           ")
+  script.Print("")
 
   # Place a copy of file_contexts.bin into the OTA package which will be used
   # by the recovery program.
