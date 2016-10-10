@@ -647,11 +647,11 @@ function lunch()
         # if we can't find a product, try to grab it off the CM github
         T=$(gettop)
         pushd $T > /dev/null
-        vendor/cm/build/tools/roomservice.py $product
+        build/tools/roomservice.py $product
         popd > /dev/null
         check_product $product
     else
-        vendor/cm/build/tools/roomservice.py $product true
+        build/tools/roomservice.py $product true
     fi
     TARGET_PRODUCT=$product \
     TARGET_BUILD_VARIANT=$variant \
