@@ -5,7 +5,6 @@
 # PFX: Prefix "target C++:" in yellow
 # INS: Module "Install:" output color (cyan for ics)
 
-ifneq ($(BUILD_WITH_COLORS),0)
   CL_PFX="\033[33m"
   CL_INS="\033[36m"
   CL_RED="\033[31m"
@@ -15,7 +14,6 @@ ifneq ($(BUILD_WITH_COLORS),0)
   CL_MAG="\033[35m"
   CL_CYN="\033[36m"
   CL_RST="\033[0m"
-endif
 
 # HACK: clear LOCAL_PATH from including last build target before calling
 # intermedites-dir-for
