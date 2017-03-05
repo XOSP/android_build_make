@@ -625,7 +625,6 @@ function lunch()
     fi
 
     export TARGET_BUILD_APPS=
-
     local variant=$(echo -n $selection | sed -e "s/^[^\-]*-//")
     check_variant $variant
     if [ $? -ne 0 ]
@@ -635,8 +634,19 @@ function lunch()
         echo "** Must be one of ${VARIANT_CHOICES[@]}"
         variant=
     fi
-
     local product=$(echo -n $selection | sed -e "s/-.*$//")
+    check_product $product
+    if [ $? -ne 0 ]
+    then
+        # Fetch the Device repo from XOSP-Devices Org if not present in local
+        T=$(gettop)
+        pushd $T > /dev/null
+        build/tools/roomservice.py $product
+        popd > /dev/null
+        check_product $product
+    else
+        build/tools/roomservice.py $product true
+    fi
     TARGET_PRODUCT=$product \
     TARGET_BUILD_VARIANT=$variant \
     build_build_var_cache
@@ -647,21 +657,16 @@ function lunch()
         echo "** Do you have the right repo manifest?"
         product=
     fi
-
     if [ -z "$product" -o -z "$variant" ]
     then
         echo
         return 1
     fi
-
     export TARGET_PRODUCT=$product
     export TARGET_BUILD_VARIANT=$variant
     export TARGET_BUILD_TYPE=release
-
     echo
-
     fixup_common_out_dir
-
     set_stuff_for_environment
     printconfig
     destroy_build_var_cache
