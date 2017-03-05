@@ -28,14 +28,8 @@ PRODUCT_PACKAGES := \
     WAPPushManager
 
 PRODUCT_PACKAGES += \
-    Galaxy4 \
-    HoloSpiralWallpaper \
     LiveWallpapers \
-    LiveWallpapersPicker \
-    MagicSmokeWallpapers \
-    NoiseField \
-    PhaseBeam \
-    PhotoTable
+    LiveWallpapersPicker
 
 # Put en_US first in the list, so make it default.
 PRODUCT_LOCALES := en_US
