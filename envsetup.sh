@@ -23,7 +23,7 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 
 EOF
 
-    __print_xosp_functions
+    __print_additional_functions
 
 cat <<EOF
 
