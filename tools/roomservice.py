@@ -3,6 +3,7 @@
 # Copyright (C) 2013 Cybojenix <anthonydking@gmail.com>
 # Copyright (C) 2013 The OmniROM Project
 # Copyright (C) 2014/2015 crDroid Android
+# Copyright (C) 2017 The Xperia Open Source Project
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,9 +40,6 @@ except ImportError:
 default_rem = "xosp_devices"
 # set this to the default revision to use (branch/tag name)
 default_rev = "xosp-n"
-# set this to the remote that you use for projects from your team repos
-# example fetch="https://github.com/omnirom"
-default_team_rem = "xosp_devices"
 # this shouldn't change unless google makes changes
 local_manifest_dir = ".repo/local_manifests"
 # change this to your name on github (or equivalent hosting)
@@ -290,7 +288,7 @@ def fetch_device(device):
     device_dir = parse_device_directory(device_url,device)
     project = create_manifest_project(device_url,
                                       device_dir,
-                                      remote=default_team_rem)
+                                      remote=default_rem)
     if not project is None:
         manifest = append_to_manifest(project)
         write_to_manifest(manifest)
