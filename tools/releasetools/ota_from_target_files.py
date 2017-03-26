@@ -680,14 +680,14 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   if HasVendorPartition(input_zip):
     system_progress -= 0.1
 
-script.Print("")  
-script.Print("____  ___________    ___________________")  
-script.Print("\   \/  /\_____  \  /   _____/\______   \ ") 
-script.Print(" \     /  /   |   \ \_____  \  |     ___/") 
-script.Print(" /     \ /    |    \/        \ |    |   ")  
-script.Print("/___/\  \\_______  /_______  / |____|   ")  
-script.Print("      \_/        \/        \/           ")
-script.Print("")
+  script.Print("")  
+  script.Print("____  ___________    ___________________")  
+  script.Print("\   \/  /\_____  \  /   _____/\______   \ ") 
+  script.Print(" \     /  /   |   \ \_____  \  |     ___/") 
+  script.Print(" /     \ /    |    \/        \ |    |   ")  
+  script.Print("/___/\  \\_______  /_______  / |____|   ")  
+  script.Print("      \_/        \/        \/           ")
+  script.Print("")
 
   # Place a copy of file_contexts.bin into the OTA package which will be used
   # by the recovery program.
@@ -781,7 +781,7 @@ script.Print("")
       ""+input_zip.read("SYSTEM/addon.d/UPDATE-SuperSU.zip"))
       script.FlashSuperSU()
 	  
-	if os.getenv('WITH_MAGISK','true') != 'false' :
+    if os.getenv('WITH_MAGISK','true') != 'false' :
       script.Print("Flashing Magisk...")
       common.ZipWriteStr(output_zip, "magisk/magisk.zip",
       ""+input_zip.read("SYSTEM/addon.d/Magisk.zip"))
