@@ -166,14 +166,14 @@ class EdifyGenerator(object):
     self.script.append(('run_program("/tmp/install/bin/backuptool.sh", "%s");' % command))
 
   def FlashSuperSU(self):
-    self.script.append('package_extract_dir("supersu", "/tmp/supersu");')
-    self.script.append('run_program("/sbin/busybox", "unzip", "/tmp/supersu/supersu.zip", "META-INF/com/google/android/*", "-d", "/tmp/supersu");')
-    self.script.append('run_program("/sbin/busybox", "sh", "/tmp/supersu/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/supersu/supersu.zip");')
+    self.script.append('package_extract_dir("install/supersu/supersu.zip", "/tmp/install/supersu");')
+    self.script.append('run_program("/sbin/busybox", "unzip", "/tmp/install/supersu/supersu.zip", "META-INF/com/google/android/*", "-d", "/tmp/install/supersu");')
+    self.script.append('run_program("/sbin/busybox", "sh", "/tmp/install/supersu/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/install/supersu/supersu.zip");')
 
   def FlashMagisk(self):
-    self.script.append('package_extract_dir("magisk", "/tmp/magisk");')
-    self.script.append('run_program("/sbin/busybox", "unzip", "/tmp/magisk/magisk.zip", "META-INF/com/google/android/*", "-d", "/tmp/magisk");')
-    self.script.append('run_program("/sbin/busybox", "sh", "/tmp/magisk/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/magisk/magisk.zip");')
+    self.script.append('package_extract_dir("install/magisk/magisk.zip", "/tmp/install/magisk");')
+    self.script.append('run_program("/sbin/busybox", "unzip", "/tmp/install/magisk/magisk.zip", "META-INF/com/google/android/*", "-d", "/tmp/install/magisk");')
+    self.script.append('run_program("/sbin/busybox", "sh", "/tmp/install/magisk/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/install/magisk/magisk.zip");')
 
   def ShowProgress(self, frac, dur):
     """Update the progress bar, advancing it over 'frac' over the next
