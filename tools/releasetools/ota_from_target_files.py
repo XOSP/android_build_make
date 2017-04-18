@@ -763,9 +763,7 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
     if block_based:
       script.Unmount("/system")
 
-
   if block_based:
-    script.Print("Preparing XOSPDelta...")
     script.Mount("/system")
     script.InstallXOSPDelta()
   if block_based:
@@ -776,11 +774,9 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
 
   if block_based:
     if os.getenv('WITH_SUPERSU','true') != 'false' :
-      script.Print("Flashing SuperSU...")
       script.FlashSuperSU()
 
     if os.getenv('WITH_MAGISK','true') != 'false' :
-      script.Print("Flashing Magisk...")
       script.FlashMagisk()
 
   script.ShowProgress(0.2, 10)
