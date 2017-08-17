@@ -967,6 +967,12 @@ ifneq ($(XOSP_BUILD),)
 
 # Include any vendor specific apicheck.mk file
 -include $(TOPDIR)vendor/*/build/core/apicheck.mk
+
+# Rules for QCOM targets
+-include $(TOPDIR)vendor/xosp/build/core/qcom_target.mk
+
+# Rules for MTK targets
+-include $(TOPDIR)vendor/xosp/build/core/mtk_target.mk
 endif
 
 include $(BUILD_SYSTEM)/dumpvar.mk
