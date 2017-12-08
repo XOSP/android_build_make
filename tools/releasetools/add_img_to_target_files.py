@@ -53,11 +53,13 @@ if sys.hexversion < 0x02070000:
 
 import datetime
 import errno
+import hashlib
 import os
 import shlex
 import shutil
 import subprocess
 import tempfile
+import uuid
 import zipfile
 
 import build_image
@@ -69,7 +71,7 @@ OPTIONS = common.OPTIONS
 
 OPTIONS.add_missing = False
 OPTIONS.rebuild_recovery = False
-OPTIONS.replace_recovery_patch_files_list = []
+OPTIONS.replace_updated_files_list = []
 OPTIONS.replace_verity_public_key = False
 OPTIONS.replace_verity_private_key = False
 OPTIONS.is_signing = False
@@ -99,8 +101,7 @@ def GetCareMap(which, imgname):
   assert which in ("system", "vendor")
 
   simg = sparse_img.SparseImage(imgname)
-  care_map_list = []
-  care_map_list.append(which)
+  care_map_list = [which]
 
   care_map_ranges = simg.care_map
   key = which + "_adjusted_partition_size"
@@ -130,7 +131,7 @@ def AddSystem(output_zip, prefix="IMAGES/", recovery_img=None, boot_img=None):
 
     arc_name = "SYSTEM/" + fn
     if arc_name in output_zip.namelist():
-      OPTIONS.replace_recovery_patch_files_list.append(arc_name)
+      OPTIONS.replace_updated_files_list.append(arc_name)
     else:
       common.ZipWrite(output_zip, ofile.name, arc_name)
 
@@ -257,6 +258,19 @@ def CreateImage(input_dir, info_dict, what, output_file, block_list=None):
     image_props["fs_config"] = fs_config
   if block_list:
     image_props["block_list"] = block_list.name
+
+  # Use repeatable ext4 FS UUID and hash_seed UUID (based on partition name and
+  # build fingerprint).
+  uuid_seed = what + "-"
+  if "build.prop" in info_dict:
+    build_prop = info_dict["build.prop"]
+    if "ro.build.fingerprint" in build_prop:
+      uuid_seed += build_prop["ro.build.fingerprint"]
+    elif "ro.build.thumbprint" in build_prop:
+      uuid_seed += build_prop["ro.build.thumbprint"]
+  image_props["uuid"] = str(uuid.uuid5(uuid.NAMESPACE_URL, uuid_seed))
+  hash_seed = "hash_seed-" + uuid_seed
+  image_props["hash_seed"] = str(uuid.uuid5(uuid.NAMESPACE_URL, hash_seed))
 
   succ = build_image.BuildImage(os.path.join(temp_dir, what),
                                 image_props, output_file.name)
@@ -473,17 +487,21 @@ def AddCache(output_zip, prefix="IMAGES/"):
   img.Write()
 
 
-def ReplaceRecoveryPatchFiles(zip_filename):
-  """Update the related files under SYSTEM/ after rebuilding recovery."""
+def ReplaceUpdatedFiles(zip_filename, files_list):
+  """Update all the zip entries listed in the files_list.
 
-  cmd = ["zip", "-d", zip_filename] + OPTIONS.replace_recovery_patch_files_list
+  For now the list includes META/care_map.txt, and the related files under
+  SYSTEM/ after rebuilding recovery.
+  """
+
+  cmd = ["zip", "-d", zip_filename] + files_list
   p = common.Run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   p.communicate()
 
   output_zip = zipfile.ZipFile(zip_filename, "a",
                                compression=zipfile.ZIP_DEFLATED,
                                allowZip64=True)
-  for item in OPTIONS.replace_recovery_patch_files_list:
+  for item in files_list:
     file_path = os.path.join(OPTIONS.input_tmp, item)
     assert os.path.exists(file_path)
     common.ZipWrite(output_zip, file_path, arcname=item)
@@ -528,6 +546,17 @@ def AddImagesToTargetFiles(filename):
     images_dir = None
 
   has_recovery = (OPTIONS.info_dict.get("no_recovery") != "true")
+
+  if OPTIONS.info_dict.get("avb_enable") == "true":
+    fp = None
+    if "build.prop" in OPTIONS.info_dict:
+      build_prop = OPTIONS.info_dict["build.prop"]
+      if "ro.build.fingerprint" in build_prop:
+        fp = build_prop["ro.build.fingerprint"]
+      elif "ro.build.thumbprint" in build_prop:
+        fp = build_prop["ro.build.thumbprint"]
+    if fp:
+      OPTIONS.info_dict["avb_salt"] = hashlib.sha256(fp).hexdigest()
 
   def banner(s):
     print("\n\n++++ " + s + " ++++\n\n")
@@ -668,17 +697,45 @@ def AddImagesToTargetFiles(filename):
         assert os.path.exists(img_path), "cannot find " + img_name
 
     if care_map_list:
-      file_path = "META/care_map.txt"
-      if output_zip:
-        common.ZipWriteStr(output_zip, file_path, '\n'.join(care_map_list))
+      care_map_path = "META/care_map.txt"
+      if output_zip and care_map_path not in output_zip.namelist():
+        common.ZipWriteStr(output_zip, care_map_path, '\n'.join(care_map_list))
       else:
-        with open(os.path.join(OPTIONS.input_tmp, file_path), 'w') as fp:
+        with open(os.path.join(OPTIONS.input_tmp, care_map_path), 'w') as fp:
           fp.write('\n'.join(care_map_list))
+        if output_zip:
+          OPTIONS.replace_updated_files_list.append(care_map_path)
+
+  # Radio images that need to be packed into IMAGES/, and product-img.zip.
+  pack_radioimages = os.path.join(
+      OPTIONS.input_tmp, "META", "pack_radioimages.txt")
+  if os.path.exists(pack_radioimages):
+    with open(pack_radioimages, 'r') as f:
+      lines = f.readlines()
+    for line in lines:
+      img_name = line.strip()
+      _, ext = os.path.splitext(img_name)
+      if not ext:
+        img_name += ".img"
+      prebuilt_path = os.path.join(OPTIONS.input_tmp, "IMAGES", img_name)
+      if os.path.exists(prebuilt_path):
+        print("%s already exists, no need to overwrite..." % (img_name,))
+        continue
+
+      img_radio_path = os.path.join(OPTIONS.input_tmp, "RADIO", img_name)
+      assert os.path.exists(img_radio_path), \
+          "Failed to find %s at %s" % (img_name, img_radio_path)
+      if output_zip:
+        common.ZipWrite(output_zip, img_radio_path,
+                        os.path.join("IMAGES", img_name))
+      else:
+        shutil.copy(img_radio_path, prebuilt_path)
 
   if output_zip:
     common.ZipClose(output_zip)
-    if OPTIONS.replace_recovery_patch_files_list:
-      ReplaceRecoveryPatchFiles(output_zip.filename)
+    if OPTIONS.replace_updated_files_list:
+      ReplaceUpdatedFiles(output_zip.filename,
+                          OPTIONS.replace_updated_files_list)
 
 
 def main(argv):

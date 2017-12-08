@@ -118,10 +118,6 @@ full_classes_processed_jar := $(intermediates.COMMON)/classes-processed.jar
 full_classes_desugar_jar := $(intermediates.COMMON)/classes-desugar.jar
 jarjar_leaf := classes-jarjar.jar
 full_classes_jarjar_jar := $(intermediates.COMMON)/$(jarjar_leaf)
-emma_intermediates_dir := $(intermediates.COMMON)/emma_out
-# emma is hardcoded to use the leaf name of its input for the output file --
-# only the output directory can be changed
-full_classes_emma_jar := $(emma_intermediates_dir)/lib/$(jarjar_leaf)
 full_classes_proguard_jar := $(intermediates.COMMON)/classes-proguard.jar
 built_dex_intermediate := $(intermediates.COMMON)/$(built_dex_intermediate_leaf)/classes.dex
 full_classes_stubs_jar := $(intermediates.COMMON)/stubs.jar
@@ -144,7 +140,6 @@ LOCAL_INTERMEDIATE_TARGETS += \
     $(full_classes_compiled_jar) \
     $(full_classes_desugar_jar) \
     $(full_classes_jarjar_jar) \
-    $(full_classes_emma_jar) \
     $(full_classes_jar) \
     $(full_classes_proguard_jar) \
     $(built_dex_intermediate) \
@@ -386,6 +381,19 @@ include $(BUILD_SYSTEM)/java_common.mk
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_HAS_RS_SOURCES := $(if $(renderscript_sources),true)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_RS_SOURCE_INTERMEDIATES_DIR := $(intermediates.COMMON)/renderscript
 
+# Set the profile source so that the odex / profile code included from java.mk
+# can find it.
+#
+# TODO: b/64896089, this is broken when called from package_internal.mk, since the file
+# we preopt from is a temporary file. This will be addressed in a follow up, possibly
+# by disabling stripping for profile guided preopt (which may be desirable for other
+# reasons anyway).
+#
+# Note that we set this only when called from package_internal.mk and not in other cases.
+ifneq (,$(called_from_package_internal)
+dex_preopt_profile_src_file := $(LOCAL_BUILT_MODULE)
+endif
+
 #######################################
 # defines built_odex along with rule to install odex
 include $(BUILD_SYSTEM)/dex_preopt_odex_install.mk
@@ -429,6 +437,16 @@ ifeq ($(RUN_ERROR_PRONE),true)
 LOCAL_JAVACFLAGS += $(LOCAL_ERROR_PRONE_FLAGS)
 endif
 
+# For user / userdebug builds, strip the local variable table and the local variable
+# type table. This has no bearing on stack traces, but will leave less information
+# available via JDWP.
+ifneq (,$(PRODUCT_MINIMIZE_JAVA_DEBUG_INFO))
+ifneq (,$(filter userdebug user,$(TARGET_BUILD_VARIANT)))
+LOCAL_JAVACFLAGS+= -g:source,lines
+LOCAL_JACK_FLAGS+= -D jack.dex.debug.vars=false -D jack.dex.debug.vars.synthetic=false
+endif
+endif
+
 $(full_classes_compiled_jar): PRIVATE_JAVACFLAGS := $(GLOBAL_JAVAC_DEBUG_FLAGS) $(LOCAL_JAVACFLAGS) $(annotation_processor_flags)
 $(full_classes_compiled_jar): PRIVATE_JAR_EXCLUDE_FILES := $(LOCAL_JAR_EXCLUDE_FILES)
 $(full_classes_compiled_jar): PRIVATE_JAR_PACKAGES := $(LOCAL_JAR_PACKAGES)
@@ -458,18 +476,21 @@ ifdef LOCAL_JAR_PROCESSOR
 # using deferred evaluation (LOCAL_JAR_PROCESSOR_ARGS = instead of :=).
 in := $(full_classes_compiled_jar)
 out := $(full_classes_processed_jar).tmp
+my_jar_processor := $(HOST_OUT_JAVA_LIBRARIES)/$(LOCAL_JAR_PROCESSOR).jar
+
 $(full_classes_processed_jar): PRIVATE_JAR_PROCESSOR_ARGS := $(LOCAL_JAR_PROCESSOR_ARGS)
-$(full_classes_processed_jar): PRIVATE_JAR_PROCESSOR := $(HOST_OUT_JAVA_LIBRARIES)/$(LOCAL_JAR_PROCESSOR).jar
+$(full_classes_processed_jar): PRIVATE_JAR_PROCESSOR := $(my_jar_processor)
 $(full_classes_processed_jar): PRIVATE_TMP_OUT := $(out)
 in :=
 out :=
 
-$(full_classes_processed_jar): $(full_classes_compiled_jar) $(LOCAL_JAR_PROCESSOR)
+$(full_classes_processed_jar): $(full_classes_compiled_jar) $(my_jar_processor)
 	@echo Processing $@ with $(PRIVATE_JAR_PROCESSOR)
 	$(hide) rm -f $@ $(PRIVATE_TMP_OUT)
-	$(hide) java -jar $(PRIVATE_JAR_PROCESSOR) $(PRIVATE_JAR_PROCESSOR_ARGS)
+	$(hide) $(JAVA) -jar $(PRIVATE_JAR_PROCESSOR) $(PRIVATE_JAR_PROCESSOR_ARGS)
 	$(hide) mv $(PRIVATE_TMP_OUT) $@
 
+my_jar_processor :=
 else
 full_classes_processed_jar := $(full_classes_compiled_jar)
 endif
@@ -493,34 +514,18 @@ ifneq ($(strip $(LOCAL_JARJAR_RULES)),)
 $(full_classes_jarjar_jar): PRIVATE_JARJAR_RULES := $(LOCAL_JARJAR_RULES)
 $(full_classes_jarjar_jar): $(full_classes_desugar_jar) $(LOCAL_JARJAR_RULES) | $(JARJAR)
 	@echo JarJar: $@
-	$(hide) java -jar $(JARJAR) process $(PRIVATE_JARJAR_RULES) $< $@
+	$(hide) $(JAVA) -jar $(JARJAR) process $(PRIVATE_JARJAR_RULES) $< $@
 else
 full_classes_jarjar_jar := $(full_classes_desugar_jar)
 endif
 
-ifeq ($(LOCAL_EMMA_INSTRUMENT),true)
-$(full_classes_emma_jar): PRIVATE_EMMA_COVERAGE_FILE := $(intermediates.COMMON)/coverage.emma.ignore
-$(full_classes_emma_jar): PRIVATE_EMMA_INTERMEDIATES_DIR := $(emma_intermediates_dir)
-# module level coverage filter can be defined using LOCAL_EMMA_COVERAGE_FILTER
-# in Android.mk
-ifdef LOCAL_EMMA_COVERAGE_FILTER
-$(full_classes_emma_jar): PRIVATE_EMMA_COVERAGE_FILTER := $(LOCAL_EMMA_COVERAGE_FILTER)
-else
-# by default, avoid applying emma instrumentation onto emma classes itself,
-# otherwise there will be exceptions thrown
-$(full_classes_emma_jar): PRIVATE_EMMA_COVERAGE_FILTER := *,-emma,-emmarun,-com.vladium.*
-endif
-# this rule will generate both $(PRIVATE_EMMA_COVERAGE_FILE) and
-# $(full_classes_emma_jar)
-$(full_classes_emma_jar): $(full_classes_jarjar_jar) | $(EMMA_JAR)
-	$(transform-classes.jar-to-emma)
+LOCAL_FULL_CLASSES_PRE_JACOCO_JAR := $(full_classes_jarjar_jar)
 
-else
-full_classes_emma_jar := $(full_classes_jarjar_jar)
-endif
+#######################################
+include $(BUILD_SYSTEM)/jacoco.mk
+#######################################
 
-# TODO: this should depend on full_classes_emma_jar once coverage works again
-full_classes_pre_proguard_jar := $(full_classes_jarjar_jar)
+full_classes_pre_proguard_jar := $(LOCAL_FULL_CLASSES_JACOCO_JAR)
 
 # Keep a copy of the jar just before proguard processing.
 $(eval $(call copy-one-file,$(full_classes_pre_proguard_jar),$(intermediates.COMMON)/classes-pre-proguard.jar))
@@ -646,7 +651,7 @@ proguard_injar_filters :=
 ifndef LOCAL_JACK_ENABLED
 ifdef LOCAL_SDK_VERSION
 ifeq (,$(filter-out current system_current test_current, $(LOCAL_SDK_VERSION)))
-proguard_injar_filters := (!junit/framework/**,!junit/runner/**,!android/test/**,!com/android/internal/util/*)
+proguard_injar_filters := (!junit/framework/**,!junit/runner/**,!junit/textui/**,!android/test/**,!com/android/internal/util/*)
 endif
 endif
 endif

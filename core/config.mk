@@ -308,6 +308,7 @@ include $(BUILD_SYSTEM)/goma.mk
 
 export CC_WRAPPER
 export CXX_WRAPPER
+export JAVAC_WRAPPER
 endif
 
 ifdef TARGET_PREFER_32_BIT
@@ -493,39 +494,53 @@ ALLOW_MISSING_DEPENDENCIES := true
 endif
 .KATI_READONLY := ALLOW_MISSING_DEPENDENCIES
 
-#
-# Tools that are prebuilts for TARGET_BUILD_APPS
-#
 prebuilt_sdk_tools := prebuilts/sdk/tools
 prebuilt_sdk_tools_bin := $(prebuilt_sdk_tools)/$(HOST_OS)/bin
 
-AIDL := $(HOST_OUT_EXECUTABLES)/aidl
-AAPT := $(HOST_OUT_EXECUTABLES)/aapt
-AAPT2 := $(HOST_OUT_EXECUTABLES)/aapt2
-ZIPALIGN := $(HOST_OUT_EXECUTABLES)/zipalign
-SIGNAPK_JAR := $(HOST_OUT_JAVA_LIBRARIES)/signapk$(COMMON_JAVA_PACKAGE_SUFFIX)
-SIGNAPK_JNI_LIBRARY_PATH := $(HOST_OUT_SHARED_LIBRARIES)
-LLVM_RS_CC := $(HOST_OUT_EXECUTABLES)/llvm-rs-cc
-BCC_COMPAT := $(HOST_OUT_EXECUTABLES)/bcc_compat
-DEPMOD := $(HOST_OUT_EXECUTABLES)/depmod
+USE_PREBUILT_SDK_TOOLS_IN_PLACE := true
 
-#TODO: use a smaller -Xmx value for most libraries;
-#      only core.jar and framework.jar need a heap this big.
-ifndef DX_ALT_JAR
-DX := $(HOST_OUT_EXECUTABLES)/dx
-DX_COMMAND := $(DX) -JXms16M -JXmx2048M
+#
+# Tools that are prebuilts for TARGET_BUILD_APPS
+#
+ifeq (,$(TARGET_BUILD_APPS)$(filter true,$(TARGET_BUILD_PDK)))
+  AIDL := $(HOST_OUT_EXECUTABLES)/aidl
+  AAPT := $(HOST_OUT_EXECUTABLES)/aapt
+  AAPT2 := $(HOST_OUT_EXECUTABLES)/aapt2
+  MAINDEXCLASSES := $(HOST_OUT_EXECUTABLES)/mainDexClasses
+  SIGNAPK_JAR := $(HOST_OUT_JAVA_LIBRARIES)/signapk$(COMMON_JAVA_PACKAGE_SUFFIX)
+  SIGNAPK_JNI_LIBRARY_PATH := $(HOST_OUT_SHARED_LIBRARIES)
+  ZIPALIGN := $(HOST_OUT_EXECUTABLES)/zipalign
+
+  ifndef DX_ALT_JAR
+    DX := $(HOST_OUT_EXECUTABLES)/dx
+    DX_COMMAND := $(DX) -JXms16M -JXmx2048M
+  else
+    DX := $(DX_ALT_JAR)
+    DX_COMMAND := $(JAVA) -Xms16M -Xmx2048M -jar $(DX)
+  endif
+else # TARGET_BUILD_APPS || TARGET_BUILD_PDK
+  AIDL := $(prebuilt_sdk_tools_bin)/aidl
+  AAPT := $(prebuilt_sdk_tools_bin)/aapt
+  AAPT2 := $(prebuilt_sdk_tools_bin)/aapt2
+  DX := $(prebuilt_sdk_tools)/dx
+  DX_COMMAND := $(DX) -JXms16M -JXmx2048M
+  MAINDEXCLASSES := $(prebuilt_sdk_tools)/mainDexClasses
+  ZIPALIGN := $(prebuilt_sdk_tools_bin)/zipalign
+  SIGNAPK_JAR := $(prebuilt_sdk_tools)/lib/signapk$(COMMON_JAVA_PACKAGE_SUFFIX)
+  SIGNAPK_JNI_LIBRARY_PATH := $(prebuilt_sdk_tools)/$(HOST_OS)/lib64
+endif # TARGET_BUILD_APPS || TARGET_BUILD_PDK
+
+ifeq (,$(TARGET_BUILD_APPS))
+  # Use RenderScript prebuilts for unbundled builds but not PDK builds
+  LLVM_RS_CC := $(HOST_OUT_EXECUTABLES)/llvm-rs-cc
+  BCC_COMPAT := $(HOST_OUT_EXECUTABLES)/bcc_compat
 else
-DX := $(DX_ALT_JAR)
-DX_COMMAND := java -Xms16M -Xmx2048M -jar $(DX)
-endif
+  LLVM_RS_CC := $(prebuilt_sdk_tools_bin)/llvm-rs-cc
+  BCC_COMPAT := $(prebuilt_sdk_tools_bin)/bcc_compat
+endif # TARGET_BUILD_PDK
 
-MAINDEXCLASSES := $(HOST_OUT_EXECUTABLES)/mainDexClasses
-
-SOONG_ZIP := $(SOONG_HOST_OUT_EXECUTABLES)/soong_zip
-ZIP2ZIP := $(SOONG_HOST_OUT_EXECUTABLES)/zip2zip
-FILESLIST := $(SOONG_HOST_OUT_EXECUTABLES)/fileslist
-
-SOONG_JAVAC_WRAPPER := $(SOONG_HOST_OUT_EXECUTABLES)/soong_javac_wrapper
+prebuilt_sdk_tools :=
+prebuilt_sdk_tools_bin :=
 
 # Always use prebuilts for ckati and makeparallel
 prebuilt_build_tools := prebuilts/build-tools
@@ -534,36 +549,17 @@ prebuilt_build_tools_bin := $(prebuilt_build_tools)/$(HOST_PREBUILT_TAG)/bin
 else
 prebuilt_build_tools_bin := $(prebuilt_build_tools)/$(HOST_PREBUILT_TAG)/asan/bin
 endif
+
 ACP := $(prebuilt_build_tools_bin)/acp
 CKATI := $(prebuilt_build_tools_bin)/ckati
+DEPMOD := $(HOST_OUT_EXECUTABLES)/depmod
+FILESLIST := $(SOONG_HOST_OUT_EXECUTABLES)/fileslist
 IJAR := $(prebuilt_build_tools_bin)/ijar
 MAKEPARALLEL := $(prebuilt_build_tools_bin)/makeparallel
+SOONG_JAVAC_WRAPPER := $(SOONG_HOST_OUT_EXECUTABLES)/soong_javac_wrapper
+SOONG_ZIP := $(SOONG_HOST_OUT_EXECUTABLES)/soong_zip
+ZIP2ZIP := $(SOONG_HOST_OUT_EXECUTABLES)/zip2zip
 ZIPTIME := $(prebuilt_build_tools_bin)/ziptime
-
-USE_PREBUILT_SDK_TOOLS_IN_PLACE := true
-
-# Override the definitions above for unbundled and PDK builds
-ifneq (,$(TARGET_BUILD_APPS)$(filter true,$(TARGET_BUILD_PDK)))
-AIDL := $(prebuilt_sdk_tools_bin)/aidl
-AAPT := $(prebuilt_sdk_tools_bin)/aapt
-AAPT2 := $(prebuilt_sdk_tools_bin)/aapt2
-ZIPALIGN := $(prebuilt_sdk_tools_bin)/zipalign
-SIGNAPK_JAR := $(prebuilt_sdk_tools)/lib/signapk$(COMMON_JAVA_PACKAGE_SUFFIX)
-# Use 64-bit libraries unconditionally because 32-bit JVMs are no longer supported
-SIGNAPK_JNI_LIBRARY_PATH := $(prebuilt_sdk_tools)/$(HOST_OS)/lib64
-
-DX := $(prebuilt_sdk_tools)/dx
-MAINDEXCLASSES := $(prebuilt_sdk_tools)/mainDexClasses
-
-# Don't use prebuilts in PDK
-ifneq ($(TARGET_BUILD_PDK),true)
-LLVM_RS_CC := $(prebuilt_sdk_tools_bin)/llvm-rs-cc
-BCC_COMPAT := $(prebuilt_sdk_tools_bin)/bcc_compat
-endif # TARGET_BUILD_PDK
-endif # TARGET_BUILD_APPS || TARGET_BUILD_PDK
-prebuilt_sdk_tools :=
-prebuilt_sdk_tools_bin :=
-
 
 # ---------------------------------------------------------------
 # Generic tools.
@@ -596,6 +592,7 @@ NANOPB_SRCS := external/nanopb-c/generator/protoc-gen-nanopb \
 VTSC := $(HOST_OUT_EXECUTABLES)/vtsc$(HOST_EXECUTABLE_SUFFIX)
 MKBOOTFS := $(HOST_OUT_EXECUTABLES)/mkbootfs$(HOST_EXECUTABLE_SUFFIX)
 MINIGZIP := $(HOST_OUT_EXECUTABLES)/minigzip$(HOST_EXECUTABLE_SUFFIX)
+BRO := $(HOST_OUT_EXECUTABLES)/bro$(HOST_EXECUTABLE_SUFFIX)
 ifeq (,$(strip $(BOARD_CUSTOM_MKBOOTIMG)))
 MKBOOTIMG := $(HOST_OUT_EXECUTABLES)/mkbootimg$(HOST_EXECUTABLE_SUFFIX)
 else
@@ -672,10 +669,10 @@ RELOCATION_PACKER := prebuilts/misc/$(BUILD_OS)-$(HOST_PREBUILT_ARCH)/relocation
 
 FINDBUGS_DIR := external/owasp/sanitizer/tools/findbugs/bin
 FINDBUGS := $(FINDBUGS_DIR)/findbugs
-EMMA_JAR := external/emma/lib/emma$(COMMON_JAVA_PACKAGE_SUFFIX)
+JACOCO_CLI_JAR := $(HOST_OUT_JAVA_LIBRARIES)/jacoco-cli$(COMMON_JAVA_PACKAGE_SUFFIX)
 
 # Tool to merge AndroidManifest.xmls
-ANDROID_MANIFEST_MERGER := java -classpath prebuilts/devtools/tools/lib/manifest-merger.jar com.android.manifmerger.Main merge
+ANDROID_MANIFEST_MERGER := $(JAVA) -classpath prebuilts/devtools/tools/lib/manifest-merger.jar com.android.manifmerger.Main merge
 
 COLUMN:= column
 
@@ -699,7 +696,7 @@ endif # ifeq ($(EXPERIMENTAL_USE_OPENJDK9),)
 
 # Is the host JDK 64-bit version?
 HOST_JDK_IS_64BIT_VERSION :=
-ifneq ($(filter 64-Bit, $(shell java -version 2>&1)),)
+ifneq ($(filter 64-Bit, $(shell $(JAVA) -version 2>&1)),)
 HOST_JDK_IS_64BIT_VERSION := true
 endif
 endif  # CALLED_FROM_SETUP not true
@@ -728,6 +725,14 @@ else ifeq ($(PRODUCT_SHIPPING_API_LEVEL),)
   #$(warning no product shipping level defined)
 else ifneq ($(call math_gt_or_eq,$(PRODUCT_SHIPPING_API_LEVEL),26),)
   PRODUCT_FULL_TREBLE := true
+endif
+
+ifdef PRODUCT_SHIPPING_API_LEVEL
+  ifneq ($(call math_gt_or_eq,$(PRODUCT_SHIPPING_API_LEVEL),27),)
+    ifneq ($(TARGET_USES_MKE2FS),true)
+      $(error When PRODUCT_SHIPPING_API_LEVEL >= 27, TARGET_USES_MKE2FS must be true)
+    endif
+  endif
 endif
 
 # The default key if not set as LOCAL_CERTIFICATE
@@ -765,8 +770,14 @@ endif
 
 ifeq ($(strip $(PRODUCT_COMPATIBILITY_MATRIX_LEVEL)),legacy)
   FRAMEWORK_COMPATIBILITY_MATRIX_FILE := hardware/interfaces/compatibility_matrix.legacy.xml
-else ifeq ($(call math_gt_or_eq,$(PRODUCT_COMPATIBILITY_MATRIX_LEVEL),27),)
+else ifeq ($(call math_gt_or_eq,$(PRODUCT_COMPATIBILITY_MATRIX_LEVEL),26),)
+  # All PRODUCT_FULL_TREBLE devices with shipping API levels < 26 get the level 26 manifest
+  # as that is the first.
   FRAMEWORK_COMPATIBILITY_MATRIX_FILE := hardware/interfaces/compatibility_matrix.26.xml
+else ifeq ($(call math_gt_or_eq,$(PRODUCT_COMPATIBILITY_MATRIX_LEVEL),28),)
+  # All shipping API levels with released compatibility matrices get the corresponding matrix.
+  FRAMEWORK_COMPATIBILITY_MATRIX_FILE := \
+      hardware/interfaces/compatibility_matrix.$(PRODUCT_COMPATIBILITY_MATRIX_LEVEL).xml
 else
   FRAMEWORK_COMPATIBILITY_MATRIX_FILE := hardware/interfaces/compatibility_matrix.current.xml
 endif
@@ -793,11 +804,6 @@ TARGET_PROJECT_SYSTEM_INCLUDES := \
 ifdef TARGET_2ND_ARCH
 $(TARGET_2ND_ARCH_VAR_PREFIX)TARGET_PROJECT_INCLUDES := $(TARGET_PROJECT_INCLUDES)
 $(TARGET_2ND_ARCH_VAR_PREFIX)TARGET_PROJECT_SYSTEM_INCLUDES := $(TARGET_PROJECT_SYSTEM_INCLUDES)
-endif
-
-# allow overriding default Java libraries on a per-target basis
-ifeq ($(TARGET_DEFAULT_JAVA_LIBRARIES),)
-  TARGET_DEFAULT_JAVA_LIBRARIES := core-oj core-libart ext framework okhttp
 endif
 
 # Flags for DEX2OAT
