@@ -36,16 +36,16 @@ except ImportError:
 
 # Config
 # set this to the default remote to use in repo
-default_rem = "github"
+default_rem = "xosp_devices"
 # set this to the default revision to use (branch/tag name)
-default_rev = "reborn-mm"
+default_rev = "xosp-o"
 # set this to the remote that you use for projects from your team repos
 # example fetch="https://github.com/omnirom"
-default_team_rem = "github"
+default_team_rem = "xosp_devices"
 # this shouldn't change unless google makes changes
 local_manifest_dir = ".repo/local_manifests"
 # change this to your name on github (or equivalent hosting)
-android_team = "XOSP-Project-Devices"
+android_team = "XOSP-Devices"
 
 
 def check_repo_exists(git_data):
@@ -227,7 +227,7 @@ def parse_device_from_folder(device):
 
 
 def parse_dependency_file(location):
-    dep_file = "reborn.dependencies"
+    dep_file = "xosp.dependencies"
     dep_location = '/'.join([location, dep_file])
     if not os.path.isfile(dep_location):
         print("WARNING: %s file not found" % dep_location)
@@ -250,7 +250,7 @@ def create_dependency_manifest(dependencies):
 
         # not adding an organization should default to android_team
         # only apply this to github
-        if remote == "github":
+        if remote == "xosp_devices":
             if not "/" in repository:
                 repository = '/'.join([android_team, repository])
         project = create_manifest_project(repository,
